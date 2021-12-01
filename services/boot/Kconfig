@@ -47,4 +47,13 @@ config SERVICE_BOOT_MMC_USE_GPT
                 parsing of a GUID Partition Table (GPT) in search of the boot image starting
                 sector..
 
+config DOBOOT_PRIORITY_HART
+	bool "Priority hart which executes HSS_OpenSBI_DoBoot first"
+	default n
+
+config DOBOOT_PRIORITY_HART_ID
+	int "Priority hart ID"
+	default 1
+	depends on DOBOOT_PRIORITY_HART
+
 endmenu

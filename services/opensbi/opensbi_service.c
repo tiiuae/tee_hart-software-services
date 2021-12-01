@@ -16,7 +16,7 @@
 #include "hss_types.h"
 #include "hss_state_machine.h"
 #include "hss_debug.h"
-#include "hss_atomic.h"
+#include "sbi/riscv_barrier.h"
 #include "hss_clock.h"
 
 #include "ssmb_ipi.h"
@@ -177,9 +177,30 @@ void HSS_OpenSBI_Setup(void)
     }
 }
 
+#ifdef CONFIG_DOBOOT_PRIORITY_HART
+
+static uint8_t sel4_booted = 0;
+
+static void wait_seL4_hart(enum HSSHartId hartid)
+{
+    if (hartid == CONFIG_DOBOOT_PRIORITY_HART_ID) {
+        sel4_booted = 1;
+    }
+
+    /* Ensure the value is re-read on each loop */
+    while (!__smp_load_acquire(&sel4_booted));
+}
+#endif /* CONFIG_DOBOOT_PRIORITY_HART */
+
 void __noreturn HSS_OpenSBI_DoBoot(enum HSSHartId hartid);
 void __noreturn HSS_OpenSBI_DoBoot(enum HSSHartId hartid)
 {
+#ifdef CONFIG_DOBOOT_PRIORITY_HART
+    /* Wait until seL4 hart has passed this point before allowing
+     * other harts to continue */
+    wait_seL4_hart(hartid);
+#endif /* CONFIG_DOBOOT_PRIORITY_HART */
+
     uint32_t mstatus_val = mHSS_CSR_READ(CSR_MSTATUS);
     mstatus_val = EXTRACT_FIELD(mstatus_val, MSTATUS_MPIE);
     mHSS_CSR_WRITE(CSR_MSTATUS, mstatus_val);
