@@ -32,13 +32,9 @@ int sbi_getc(void)
 #include <sbi/sbi_hart.h>
 void sbi_putc(char ch)
 {
-        int hartid = current_hartid();
-
-        if ((hartid == 0) || (hartid == 1)) {
 		if (ch == '\n')
 			sbi_platform_console_putc(console_plat, '\r');
 		sbi_platform_console_putc(console_plat, ch);
-        }
 }
 
 void sbi_puts(const char *str)
