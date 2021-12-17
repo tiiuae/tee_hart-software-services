@@ -35,7 +35,7 @@
 static uint32_t message_present_handler(uint32_t remote_hart_id, uint32_t * message,
     uint32_t message_size , bool is_ack, uint32_t *message_storage_ptr)
 {
-    struct ihc_sbi_rx_msg msg;
+    struct ihc_sbi_rx_msg msg = { 0 };
 
     (void)remote_hart_id;
 
