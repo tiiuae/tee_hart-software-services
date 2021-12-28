@@ -87,4 +87,8 @@ config DEBUG_PERF_CTRS_NUM
 	help
 		This feature configures how many performance counters are enabled.
 
+config DEBUG_IHC_VERBOSE_TRACE
+	bool "Verbose IHC traces"
+	default n
+
 endmenu

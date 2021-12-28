@@ -32,6 +32,8 @@
 #include "opensbi_ecall.h"
 #include "opensbi_ihc_ecall.h"
 
+#include "hss_debug.h"
+
 static uint32_t message_present_handler(uint32_t remote_hart_id, uint32_t * message,
     uint32_t message_size , bool is_ack, uint32_t *message_storage_ptr)
 {
@@ -70,6 +72,12 @@ int sbi_ecall_ihc_handler(unsigned long extid, unsigned long funcid,
         case SBI_EXT_IHC_CTX_INIT:
             my_hart_id = IHC_context_to_local_hart_id(remote_channel);
             remote_hart_id = IHC_context_to_remote_hart_id(remote_channel);
+
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+            mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d]: INIT: ch[%d] h[%d]\n",
+                        current_hartid(), remote_channel, remote_hart_id);
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
             IHC_local_remote_config(my_hart_id, remote_hart_id, message_present_handler, true, true);
             result = SBI_OK;
             break;

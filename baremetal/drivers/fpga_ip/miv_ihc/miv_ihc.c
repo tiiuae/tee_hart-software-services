@@ -9,6 +9,12 @@
  */
 #include <string.h>
 #include <stdio.h>
+
+#include <config.h>
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+#include "hss_debug.h"
+#endif
+
 #include "mpfs_hal/mss_hal.h"
 #include "miv_ihc.h"
 #include "assert.h"
@@ -294,6 +300,11 @@ uint32_t IHC_tx_message(IHC_CHANNEL channel, uint32_t *message)
         ret_value = MESSAGE_SENT;
     }
 
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+    mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] rh[%d] s[%d] (0x%x 0x%x) r[%d]\n",
+                read_csr(mhartid), remote_hart_id, message_size, message[0], message[1], ret_value);
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
     return (ret_value);
 }
 
@@ -350,6 +361,13 @@ void IHC_message_present_indirect_isr(uint32_t my_hart_id, uint32_t remote_chann
             IHC[my_hart_id]->HART_IHC[origin_hart]->CTR_REG.CTL_REG &= ~ACK_CLR;
         }
     }
+
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+    else {
+        mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] RX NOP\n", read_csr(mhartid));
+    }
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
 }
 
 /**
@@ -561,6 +579,21 @@ static uint32_t rx_message(IHC_CHANNEL channel, QUEUE_IHC_INCOMING handle_incomi
 
     assert(handle_incoming);
 
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+    if (is_ack == true)
+    {
+        mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] rh[%d] ACK\n", read_csr(mhartid),
+                            remote_hart_id);
+    }
+    else if (MP_MESSAGE_PRESENT == (IHC[my_hart_id]->HART_IHC[remote_hart_id]->CTR_REG.CTL_REG & MP_MASK))
+    {
+        mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] rh[%d] s[%d] a[%d] (0x%x 0x%x)\n",
+                    read_csr(mhartid), remote_hart_id, message_size, is_ack,
+                    IHC[my_hart_id]->HART_IHC[remote_hart_id]->mesg_in[0],
+                    IHC[my_hart_id]->HART_IHC[remote_hart_id]->mesg_in[1]);
+    }
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
     if (is_ack == true)
     {
         handle_incoming(remote_hart_id, (uint32_t *)&IHC[my_hart_id]->HART_IHC[remote_hart_id]->mesg_in[0U], message_size, is_ack, message_storage_ptr);
@@ -596,6 +629,11 @@ static uint32_t rx_message(IHC_CHANNEL channel, QUEUE_IHC_INCOMING handle_incomi
          * report status
          */
         ret_value = NO_MESSAGE_RX;
+
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+        mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] NO_MESSAGE_RX\n", read_csr(mhartid));
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
     }
 
     return (ret_value);

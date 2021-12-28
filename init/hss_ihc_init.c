@@ -43,6 +43,10 @@ static uint32_t u54_ihc_incoming_(uint32_t remote_hartid, uint32_t *p_message_in
 
     assert(p_message_in);
 
+#ifdef CONFIG_DEBUG_IHC_VERBOSE_TRACE
+    mHSS_DEBUG_PRINTF(LOG_NORMAL, "[%d] IHC RX: rh[%d] N/A\n", current_hartid(), remote_hartid);
+#endif /* CONFIG_DEBUG_IHC_VERBOSE_TRACE */
+
     bool HSS_U54_ConsumeIntent(enum IPIMessagesEnum msg_type);
     HSS_U54_ConsumeIntent((enum IPIMessagesEnum)p_message_in[0]);
 
