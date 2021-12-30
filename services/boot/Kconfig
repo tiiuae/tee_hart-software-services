@@ -1,51 +1,51 @@
 config SERVICE_BOOT
 	def_bool y
 	select SERVICE_OPENSBI
-        select SERVICE_DDR
+	select SERVICE_DDR
 	help
-                This feature enables support for bootstrapping the U54 application harts. This
-                is enabled by default.
+		This feature enables support for bootstrapping the U54 application harts. This
+		is enabled by default.
 
 menu "Boot Service"
 	visible if SERVICE_BOOT
 
 config SERVICE_BOOT_SPI_FLASH_OFFSET
-        hex "Copy payload from SPI FLASH at offset"
-        default  0x400
-        depends on SERVICE_SPI
-        help
-                This feature specifies the offset in SPI Flash where a boot image is stored.
+	hex "Copy payload from SPI FLASH at offset"
+	default  0x400
+	depends on SERVICE_SPI
+	help
+		This feature specifies the offset in SPI Flash where a boot image is stored.
 
 config SERVICE_BOOT_USE_PAYLOAD
-        bool "Use Payload file"
-        default  n
-        depends on SERVICE_BOOT 
-        help
-                This feature enables booting a directly contained payload.
+	bool "Use Payload file"
+	default  n
+	depends on SERVICE_BOOT 
+	help
+		This feature enables booting a directly contained payload.
 
 config SERVICE_BOOT_CUSTOM_FLOW
-        bool "Use Custom Boot Flow"
-        default  n
-        depends on SERVICE_BOOT
-        help
-                This feature enables custom booting flow where all HARTs
-                will jump to same entry point in M-mode.
+	bool "Use Custom Boot Flow"
+	default  n
+	depends on SERVICE_BOOT
+	help
+		This feature enables custom booting flow where all HARTs
+		will jump to same entry point in M-mode.
 
 config SERVICE_BOOT_DDR_TARGET_ADDR
 	hex "Target Base address for BOOT to DDR copy"
 	default 0xA0000000
 	depends on SERVICE_BOOT
 	help
-                This feature specifies a scratch address for EMMC/QSPI decompression
+		This feature specifies a scratch address for EMMC/QSPI decompression
 
 config SERVICE_BOOT_MMC_USE_GPT
-        bool "Use GPT with MMC"
-        default SERVICE_BOOT && SERVICE_MMC && y
+	bool "Use GPT with MMC"
+	default SERVICE_BOOT && SERVICE_MMC && y
 	depends on SERVICE_MMC
 	help
 		If CONFIG_SERVICE_MMC is enabled, then for MMC boots this option enables 
-                parsing of a GUID Partition Table (GPT) in search of the boot image starting
-                sector..
+		parsing of a GUID Partition Table (GPT) in search of the boot image starting
+		sector..
 
 config DOBOOT_PRIORITY_HART
 	bool "Priority hart which executes HSS_OpenSBI_DoBoot first"
@@ -55,5 +55,14 @@ config DOBOOT_PRIORITY_HART_ID
 	int "Priority hart ID"
 	default 1
 	depends on DOBOOT_PRIORITY_HART
+
+config DISABLE_COLDBOOT_LOTTERY
+	bool "Disable cold boot hart lottery"
+	default n
+
+config COLDBOOT_HART
+	int "Cold boot hart ID"
+	default 1
+	depends on DISABLE_COLDBOOT_LOTTERY
 
 endmenu

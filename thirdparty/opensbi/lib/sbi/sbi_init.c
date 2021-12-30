@@ -26,6 +26,8 @@
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_version.h>
 
+#include "config.h"
+
 #define BANNER                                              \
 	"   ____                    _____ ____ _____\n"     \
 	"  / __ \\                  / ____|  _ \\_   _|\n"  \
@@ -405,7 +407,9 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 			     scratch->next_mode, FALSE);
 }
 
+#ifndef CONFIG_DISABLE_COLDBOOT_LOTTERY
 static atomic_t coldboot_lottery __attribute__((section(".l2_scratchpad"))) = ATOMIC_INITIALIZER(0);
+#endif /* CONFIG_DISABLE_COLDBOOT_LOTTERY */
 
 /**
  * Initialize OpenSBI library for current HART and jump to next
@@ -461,9 +465,15 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		coldboot = TRUE;
 #endif
 
+#ifndef CONFIG_DISABLE_COLDBOOT_LOTTERY
 	bool mpfs_is_last_hart_booting(void);
-        if (next_mode_supported && mpfs_is_last_hart_booting() && atomic_xchg(&coldboot_lottery, 1) == 0)
+	if (next_mode_supported && mpfs_is_last_hart_booting() && atomic_xchg(&coldboot_lottery, 1) == 0)
 		coldboot = TRUE;
+#else /* CONFIG_DISABLE_COLDBOOT_LOTTERY */
+	if (next_mode_supported && hartid == CONFIG_COLDBOOT_HART) {
+		coldboot = TRUE;
+	}
+#endif /* CONFIG_DISABLE_COLDBOOT_LOTTERY */
 
 	if (coldboot)
 		init_coldboot(scratch, hartid);
