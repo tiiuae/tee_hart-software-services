@@ -82,8 +82,11 @@ int sbi_ecall_ihc_handler(unsigned long extid, unsigned long funcid,
             result = SBI_OK;
             break;
         case SBI_EXT_IHC_SEND:
-            if (IHC_tx_message(remote_channel, (uint32_t *) message_ptr))
-                result = SBI_ERR_DENIED;
+            /* retry sending if receiver busy */
+            while(IHC_tx_message(remote_channel, (uint32_t *) message_ptr) == MP_BUSY)
+                cpu_relax();
+
+            result = SBI_OK;
             break;
         case SBI_EXT_IHC_RECEIVE:
             IHC_message_present_indirect_isr(current_hartid(), remote_channel, (uint32_t *) message_ptr);
