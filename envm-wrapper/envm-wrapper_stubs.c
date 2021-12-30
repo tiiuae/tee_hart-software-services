@@ -13,6 +13,9 @@
 #include "hss_progress.h"
 #include "uart_helper.h"
 
+void HSS_Debug_Lock(void) {}
+void HSS_Debug_Unlock(void) {}
+
 void HSS_Debug_Timestamp(void)
 {
     ;

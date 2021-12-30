@@ -16,8 +16,22 @@
 #include "hss_types.h"
 #include "hss_debug.h"
 #include "hss_clock.h"
+#include "hss_debug.h"
 
 #include <assert.h>
+
+#include <sbi/riscv_locks.h>
+static spinlock_t hss_debug_lock	       = SPIN_LOCK_INITIALIZER;
+
+void HSS_Debug_Lock(void)
+{
+    spin_lock(&hss_debug_lock);
+}
+
+void HSS_Debug_Unlock(void)
+{
+    spin_unlock(&hss_debug_lock);
+}
 
 void HSS_Debug_Timestamp(void)
 {
@@ -72,7 +86,8 @@ void HSS_Debug_Highlight(HSS_Debug_LogLevel_t logLevel)
         break;
     }
 
-    mHSS_PUTS(pHighlight);
+    /* Don't use mHSS_PUTS -> deadlock on spinlock */
+    sbi_puts(pHighlight);
 #else
     (void)logLevel;
 #endif
